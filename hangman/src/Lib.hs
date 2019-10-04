@@ -1,13 +1,9 @@
-module Lib where
+module Lib (randomWord, freshPuzzle, runGame) where
 
 import Control.Monad (forever)
-import Data.Char (toLower)
 import Data.Maybe (isJust)
 import Data.List (intersperse)
 import System.Exit (exitSuccess)
-import System.IO (BufferMode(NoBuffering),
-                  hSetBuffering,
-                  stdout)
 import System.Random (Random, randomRIO)
 
 type WordList = [String]
@@ -94,3 +90,13 @@ gameWin (Puzzle _ discovered _)
   | all isJust discovered = putStrLn "You win!" >> exitSuccess
   | otherwise = return ()
 
+runGame :: Puzzle -> IO ()
+runGame p = forever $ do
+  gameOver p
+  gameWin p
+  putStrLn ("Current puzzle is: " ++ show p) >> putStr "Guess a letter: "
+
+  guess <- getLine
+  case guess of
+    [c] -> handleGuess p c >>= runGame
+    _   -> putStrLn "Your guess must be a single character"
